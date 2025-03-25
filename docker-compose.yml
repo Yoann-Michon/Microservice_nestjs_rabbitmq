@@ -1,0 +1,115 @@
+services:
+  api-gateway:
+    build:
+      context: ./api_gateway
+    ports:
+      - "4000:4000"
+    depends_on:
+      - auth-service
+      - event-service
+      - user-service
+      - notification-service
+      - rabbitmq
+    env_file:
+      - ./api_gateway/.env
+
+  auth-service:
+    build:
+      context: ./auth_service
+    ports:
+      - "4001:4000"
+    depends_on:
+      - user-service
+      - rabbitmq
+    env_file:
+      - ./auth_service/.env
+
+  event-service:
+    build:
+      context: ./event_service
+    ports:
+      - "4002:4000"
+    depends_on:
+      - mariadb-event
+      - rabbitmq
+    env_file:
+      - ./event_service/.env
+
+  user-service:
+    build:
+      context: ./user_service
+    ports:
+      - "4004:4000"
+    depends_on:
+      - mariadb-user
+      - rabbitmq
+    env_file:
+      - ./user_service/.env
+
+  notification-service:
+    build:
+      context: ./notification_service
+    ports:
+      - "4006:4000"
+    depends_on:
+      - mariadb-notification
+      - rabbitmq
+    env_file:
+      - ./notification_service/.env
+
+  mariadb-event:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: event_db
+      MYSQL_USER: event_user
+      MYSQL_PASSWORD: event_password
+    ports:
+      - "33062:3306"
+    volumes:
+      - mariadb-event-data:/var/lib/mysql
+
+  mariadb-user:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: user_db
+      MYSQL_USER: user_user
+      MYSQL_PASSWORD: user_password
+    ports:
+      - "33063:3306"
+    volumes:
+      - mariadb-user-data:/var/lib/mysql
+
+  mariadb-notification:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: notification_db
+      MYSQL_USER: notification_user
+      MYSQL_PASSWORD: notification_password
+    ports:
+      - "33064:3306"
+    volumes:
+      - mariadb-notification-data:/var/lib/mysql
+
+  rabbitmq:
+    image: "rabbitmq:3-management"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
+volumes:
+  mariadb-event-data:
+    driver: local
+  mariadb-user-data:
+    driver: local
+  mariadb-notification-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
