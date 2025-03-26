@@ -10,6 +10,7 @@ import { EventsController } from './events/events.controller';
 import { UsersController } from './users/users.controller';
 import { NotificationsController } from './notifications/notifications.controller'
 import { UploadPictureModule } from '@upload/upload-picture';
+import { HealthController } from './health/health.controller';
 
 @Module({
   imports: [
@@ -80,7 +81,7 @@ import { UploadPictureModule } from '@upload/upload-picture';
       },
     ]),
   ],
-  controllers: [ApisController,EventsController,UsersController,NotificationsController],
+  controllers: [ApisController,EventsController,UsersController,NotificationsController,HealthController],
   providers: [ApisService,EventsService,UsersService,NotificationsService],
 })
 export class ApiGatewayModule {}

@@ -26,7 +26,7 @@ import { JwtStrategy } from './strategy/jwt.strategy';
           transport: Transport.RMQ,
           options: {
             urls: [configService.get<string>('RABBITMQ_HOST') || ''],
-            queue: configService.get<string>('RABBITMQ_USER_QUEUE'),
+            queue: configService.get<string>('RABBITMQ_API_GATEWAY_QUEUE'),
             queueOptions: { durable: true },
           },
         }),

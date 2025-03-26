@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { Role } from './entities/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -18,17 +19,21 @@ export class UsersService {
       if (existingUser) {
         throw new BadRequestException('User already exists');
       }
+      console.log("existingUser:", existingUser);
+      
 
       const hashedPassword = await bcrypt.hash(
         createUserDto.password,
         Number(process.env.SALT),
       );
-      const user = {
-        ...createUserDto,
-        password: hashedPassword,
-      };
-      console.log('user', user);
       
+      const user = new User();
+      user.firstName = createUserDto.firstName;
+      user.lastName = createUserDto.lastName;
+      user.email = createUserDto.email;
+      user.password = hashedPassword;
+      
+      console.log("user:", user);
       return await this.usersRepository.save(user);
     } catch (error) {
       throw new InternalServerErrorException(
@@ -79,7 +84,7 @@ export class UsersService {
         throw new NotFoundException('User not found');
       }
 
-      const updatedUser = { ...user, ...updateUserDto };
+      const updatedUser = { ...user, ...updateUserDto, role: updateUserDto.role as Role };
       
       return await this.usersRepository.save(updatedUser);
     } catch (error) {

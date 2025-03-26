@@ -5,7 +5,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { RolesGuard } from '../guards/roles.guard';
 import { Roles } from '../guards/roles.decorator';
 import { Role } from '../guards/role.enum';
-import { Public } from 'src/guards/public.decorator';
+import { Public } from '../guards/public.decorator';
 
 @Controller("events")
 @UseGuards(JwtAuthGuard, RolesGuard)

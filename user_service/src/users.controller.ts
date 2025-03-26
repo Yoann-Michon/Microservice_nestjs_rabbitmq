@@ -14,6 +14,8 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Payload() createUserDto: CreateUserDto) {
     try {
+      console.log('createUserDto:', createUserDto);
+      
       const user = await this.usersService.create(createUserDto);
       return {
         message: 'User created successfully',

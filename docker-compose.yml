@@ -12,6 +12,12 @@ services:
       - rabbitmq
     env_file:
       - ./api_gateway/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"] 
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   auth-service:
     build:
@@ -23,6 +29,12 @@ services:
       - rabbitmq
     env_file:
       - ./auth_service/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   event-service:
     build:
@@ -34,6 +46,12 @@ services:
       - rabbitmq
     env_file:
       - ./event_service/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   user-service:
     build:
@@ -45,6 +63,12 @@ services:
       - rabbitmq
     env_file:
       - ./user_service/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   notification-service:
     build:
@@ -56,6 +80,12 @@ services:
       - rabbitmq
     env_file:
       - ./notification_service/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
 
   mariadb-event:
     image: mariadb:10.5
@@ -69,6 +99,12 @@ services:
       - "33062:3306"
     volumes:
       - mariadb-event-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   mariadb-user:
     image: mariadb:10.5
@@ -82,6 +118,12 @@ services:
       - "33063:3306"
     volumes:
       - mariadb-user-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   mariadb-notification:
     image: mariadb:10.5
@@ -95,6 +137,12 @@ services:
       - "33064:3306"
     volumes:
       - mariadb-notification-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
 
   rabbitmq:
     image: "rabbitmq:3-management"
@@ -103,6 +151,12 @@ services:
       - "15672:15672"
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
 
 volumes:
   mariadb-event-data:

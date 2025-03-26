@@ -1,7 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
-import { IsEmail, IsEnum, isEnum, IsNotEmpty, IsOptional, Length, Matches, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
-import { Role } from 'src/entities/role.enum';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, Length, Matches} from 'class-validator';
+import { Role } from '../entities/role.enum';
 
 export class CreateUserDto {
 
