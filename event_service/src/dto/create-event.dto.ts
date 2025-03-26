@@ -48,7 +48,7 @@ export class CreateEventDto {
 
     @IsNotEmpty({ message: 'Creator ID is required' })
     @IsString()
-    createdBy: string;
+    createdBy: number;
 
     @IsOptional()
     @IsBoolean()

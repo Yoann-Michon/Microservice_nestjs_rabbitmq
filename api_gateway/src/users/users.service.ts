@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable} from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 
@@ -8,19 +8,18 @@ export class UsersService {
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
-  async getAllUsers() {
-    return await this.userServiceClient.send('findAllUsers', {}).toPromise();
+  async getAllUsers(user: any) {
+    return await this.userServiceClient.send('findAllUsers', user).toPromise();
   }
 
-  async getUserById(id: number) {
-    return await this.userServiceClient.send('findUserById', id).toPromise();
+  async getUserById(id: number,user: any) {
+    return await this.userServiceClient.send('findUserById', {id, user}).toPromise();;  }
+
+  async updateUserById(id: number, updateUser:any, user: any) {
+    return await this.userServiceClient.send('updateUser', {id, updateUser,user}).toPromise();
   }
 
-  async updateUserById(id: number, user:any) {
-    return await this.userServiceClient.send('updateUser', {id, ...user}).toPromise();
-  }
-
-  async deleteUserById(id: number) {
-    return await this.userServiceClient.send('removeUser', id).toPromise();
+  async deleteUserById(id: number, user: any) {
+    return await this.userServiceClient.send('removeUser', {id, user}).toPromise();
   }
 }

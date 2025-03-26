@@ -32,7 +32,7 @@ export class Event {
     availableSeat: number;
 
     @Column({ nullable: false })
-    createdBy: string;
+    createdBy: number;
 
     @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     creationDate: Date;

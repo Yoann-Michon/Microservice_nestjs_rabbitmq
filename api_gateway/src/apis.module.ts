@@ -5,11 +5,11 @@ import { ApisController } from './apis.controller';
 import { ApisService } from './apis.service';
 import { EventsService } from './events/events.service';
 import { UsersService } from './users/users.service';
-import { UploadPictureModule } from '@upload/upload-picture';
 import { NotificationsService } from './notifications/notifications.service';
 import { EventsController } from './events/events.controller';
 import { UsersController } from './users/users.controller';
-import { NotificationsController } from './notifications/notifications.controller';
+import { NotificationsController } from './notifications/notifications.controller'
+import { UploadPictureModule } from '@upload/upload-picture';
 
 @Module({
   imports: [

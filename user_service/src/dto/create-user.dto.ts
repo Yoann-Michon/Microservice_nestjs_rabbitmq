@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, Unique } from 'typeorm';
-import { IsEmail, IsNotEmpty, IsOptional, Length, Matches, ValidateNested } from 'class-validator';
+import { IsEmail, IsEnum, isEnum, IsNotEmpty, IsOptional, Length, Matches, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Role } from 'src/entities/role.enum';
 
 export class CreateUserDto {
 
@@ -22,4 +23,8 @@ export class CreateUserDto {
     @IsNotEmpty()
     @Length(3, 50)
     lastName: string;
+
+    @IsOptional()
+    @IsEnum(Role)
+    role: string;
 }

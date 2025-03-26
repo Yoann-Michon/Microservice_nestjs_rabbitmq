@@ -65,7 +65,7 @@ export class EventService {
 
   async findAll(): Promise<Event[] | []> {
     const events = await this.eventRepository.find({
-      relations: ['address', 'category']
+      relations: ['address']
     });
 
     return events ? events.filter(event => event.isActive === true): [];
@@ -74,16 +74,16 @@ export class EventService {
   async findOne(id: number): Promise<Event | null> {
     const event = await this.eventRepository.findOne({
       where: { id },
-      relations: ['address', 'category']
+      relations: ['address']
     });
     return event;
   }
 
-  async update(updateEventDto: UpdateEventDto): Promise<Event> {
-    const event = await this.findOne(updateEventDto.id);
+  async update(id:number,updateEventDto: UpdateEventDto): Promise<Event> {
+    const event = await this.findOne(id);
 
     if (!event) {
-      throw new NotFoundException(`Event with ID ${updateEventDto.id} not found`);
+      throw new NotFoundException(`Event with ID ${id} not found`);
     }
 
     if (updateEventDto.startDate && updateEventDto.endDate &&

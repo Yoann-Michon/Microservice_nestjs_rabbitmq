@@ -50,4 +50,14 @@ export class AuthsService {
     }
   }
 
+  async validateToken(token: string) {
+    try {
+      const decoded = await this.jwtService.verify(token);
+      const user = await this.userClient.send('findUserById', decoded.sub).toPromise();
+      return user;
+    } catch (error) {
+      throw new UnauthorizedException('Invalid token');
+    }
+  }
+
 }

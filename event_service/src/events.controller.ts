@@ -1,8 +1,9 @@
-import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { Controller, HttpStatus } from '@nestjs/common';
+import { MessagePattern, Payload, RpcException } from '@nestjs/microservices';
 import { EventService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
+import { Role } from './entities/role.enum';
 
 @Controller("events")
 export class EventsController {
@@ -19,17 +20,113 @@ export class EventsController {
   }
 
   @MessagePattern('findOneEvent')
-  async findOne(@Payload() id: number) {
-    return await this.eventsService.findOne(id);
+  async findOne(@Payload() payload: {id: number, user: any}) {
+    const { id, user } = payload;
+    
+    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
+      throw new RpcException({
+        status: HttpStatus.FORBIDDEN,
+        message: 'Access denied',
+      });
+    }
+    try {
+      const event = await this.eventsService.findOne(id);
+
+      if (!event) {
+        throw new RpcException({
+          code: HttpStatus.NOT_FOUND,
+          message: `Event with id ${id} not found`,
+        });
+      }
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Event found successfully',
+        event,
+      };
+    } catch (error) {
+      throw new RpcException({
+        code: error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message || 'Error while retrieving event',
+        details: error?.details || '',
+      });
+    }
   }
 
   @MessagePattern('updateEvent')
-  async update(@Payload() updateEventDto: UpdateEventDto) {
-    return await this.eventsService.update(updateEventDto);
+  async update(@Payload() payload: {id:number, updateEventDto: UpdateEventDto,user: any}) {
+    const { id, updateEventDto, user } = payload;
+
+    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
+      throw new RpcException({
+        status: HttpStatus.FORBIDDEN,
+        message: 'Access denied',
+      });
+    }
+    
+    if (user.role === Role.EVENTCREATOR && user.id !== updateEventDto.createdBy) {
+      throw new RpcException({
+        status: HttpStatus.FORBIDDEN,
+        message: 'Event creators can only update their own events',
+      });
+    }
+    
+    try {
+      const updatedEvent = await this.eventsService.update(id,updateEventDto);
+
+      if (!updatedEvent) {
+        throw new RpcException({
+          code: HttpStatus.NOT_FOUND,
+          message: `Event with id ${id} not found`,
+        });
+      }
+
+      return {
+        code: HttpStatus.OK,
+        message: 'Event updated successfully',
+        updatedEvent,
+      };
+    } catch (error) {
+      throw new RpcException({
+        code: error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message || 'Error while updating event',
+        details: error?.details || '',
+      });
+    }
   }
 
   @MessagePattern('removeEvent')
-  async remove(@Payload() id: number) {
-    return await this.eventsService.remove(id);
+  async remove(@Payload() payload: { id: number; user: any }) {
+    const { id, user } = payload;
+
+    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
+      throw new RpcException({
+        status: HttpStatus.FORBIDDEN,
+        message: 'Access denied',
+      });
+    }
+
+    try {
+      const event = await this.findOne({ id, user });
+
+      if (user.role === Role.EVENTCREATOR && user.id !== event.event.createdBy) {
+        throw new RpcException({
+          status: HttpStatus.FORBIDDEN,
+          message: 'Event creators can only delete their own events',
+        });
+      }
+
+      await this.eventsService.remove(id);
+
+      return {
+        code: HttpStatus.OK,
+        message: 'Event removed successfully',
+      };
+    } catch (error) {
+      throw new RpcException({
+        code: error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message || 'Error while deleting event',
+        details: error?.details || '',
+      });
+    }
   }
 }

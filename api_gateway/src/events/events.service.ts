@@ -13,11 +13,11 @@ export class EventsService{
         return await this.eventsServiceClient.send('findAllEvents', {}).toPromise();
     }
 
-    async getEventById(id: number){
-        return await this.eventsServiceClient.send('findOneEvent', id).toPromise();
+    async getEventById(id: number, user: any){
+        return await this.eventsServiceClient.send('findOneEvent', {id,user}).toPromise();
     }
 
-    async createEvent(event: any, files: Express.Multer.File[]){
+    async createEvent(event: any, files: Express.Multer.File[], user: any){
 
         if (!files || files.length === 0) {
             throw new BadRequestException('At least one image is required');
@@ -29,14 +29,14 @@ export class EventsService{
             throw new BadRequestException('Failed to upload images');
           }
           event.images = imageUrls;
-        return await this.eventsServiceClient.send('createEvent', event).toPromise();
+        return await this.eventsServiceClient.send('createEvent', {event, user}).toPromise();
     }
 
-    async updateEventById(id: number, event: any){
-        return await this.eventsServiceClient.send('updateEvent', {id, ...event}).toPromise();
+    async updateEventById(id: number, event: any, user: any){
+        return await this.eventsServiceClient.send('updateEvent', {id,event,user}).toPromise();
     }
 
-    async deleteEventById(id: number){
-        return await this.eventsServiceClient.send('removeEvent', id).toPromise();
+    async deleteEventById(id: number,user: any){
+        return await this.eventsServiceClient.send('removeEvent', {id,user}).toPromise();
     }
 }

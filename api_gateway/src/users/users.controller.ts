@@ -1,29 +1,38 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch,UseGuards, Request } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { RolesGuard } from '../guards/roles.guard';
+import { Roles } from '../guards/roles.decorator';
+import { Role } from '../guards/role.enum';
 
 @Controller("users")
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
 
   ) {}
   @Get()
-  async getAllUsers() {
-    return await this.usersService.getAllUsers();
+  @Roles(Role.ADMIN)
+  async getAllUsers(@Request() req) {
+    return await this.usersService.getAllUsers(req.user);
   }
 
   @Get(':id')
-  async getUserById(@Param('id') id: number) {
-    return await this.usersService.getUserById(id);
+  @Roles(Role.ADMIN, Role.USER, Role.EVENTCREATOR)
+  async getUserById(@Param('id') id: number, @Request() req) {
+    return await this.usersService.getUserById(id,req.user);
   }
 
   @Patch(':id')
-  async updateUserById(@Param('id') id: number, @Body() user:any) {
-    return await this.usersService.updateUserById(id, user);
+  @Roles(Role.ADMIN, Role.USER, Role.EVENTCREATOR)
+  async updateUserById(@Param('id') id: number, @Body() user:any, @Request() req) {
+    return await this.usersService.updateUserById(id, user, req.user);
   }
 
   @Delete(':id')
-  async deleteUserById(@Param('id') id: number) {
-    return await this.usersService.deleteUserById(id);
+  @Roles(Role.ADMIN)
+  async deleteUserById(@Param('id') id: number, @Request() req) {
+    return await this.usersService.deleteUserById(id, req.user);
   }
 }
