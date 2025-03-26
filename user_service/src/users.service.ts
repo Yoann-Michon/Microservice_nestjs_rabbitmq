@@ -19,8 +19,6 @@ export class UsersService {
       if (existingUser) {
         throw new BadRequestException('User already exists');
       }
-      console.log("existingUser:", existingUser);
-      
 
       const hashedPassword = await bcrypt.hash(
         createUserDto.password,
@@ -33,7 +31,6 @@ export class UsersService {
       user.email = createUserDto.email;
       user.password = hashedPassword;
       
-      console.log("user:", user);
       return await this.usersRepository.save(user);
     } catch (error) {
       throw new InternalServerErrorException(

@@ -3,7 +3,6 @@ import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { IS_PUBLIC_KEY } from './public.decorator';
-import { log } from 'console';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -30,20 +29,16 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      log("-----try catch-------");
       
       const user = await this.authServiceClient.send('validate_token', token).toPromise();
-      log("user----",user);
       
       if (!user) {
         throw new UnauthorizedException('Invalid user');
       }
       
-      request.user = user;
+      request.user = user.user;
       return true;
     } catch (error) {
-      console.log(error);
-      
       throw new UnauthorizedException('Invalid authentication token');
     }
   }

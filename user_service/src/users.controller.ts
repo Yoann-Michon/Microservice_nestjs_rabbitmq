@@ -78,7 +78,7 @@ export class UsersController {
 
       return {
         message: 'User found successfully',
-        userFound,
+        user: userFound,
       };
     } catch (error) {
       throw new RpcException({

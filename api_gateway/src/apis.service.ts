@@ -10,12 +10,10 @@ export class ApisService {
 
   //auths
   async login(login:any) {
-    console.log("----login----");
     return await this.authServiceClient.send('login', login).toPromise();
   }
 
   async register(register:any) {
-    console.log("----register----");
     return await this.authServiceClient.send('register', register).toPromise();
   }
 }

@@ -10,15 +10,11 @@ export class AuthsController {
 
   @MessagePattern('login')
   async login(@Payload() loginUserDto: LoginUserDto) {
-    console.log("----authservice login----");
-    console.log(loginUserDto);
     return await this.authsService.login(loginUserDto);
   }
 
   @MessagePattern('register')
   async register(@Payload() createAuthDto: CreateAuthDto) {
-    console.log("----authservice createdto----");
-    console.log(createAuthDto);
     return await this.authsService.register(createAuthDto);
   }
 

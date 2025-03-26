@@ -52,7 +52,6 @@ export class AuthsService {
   async validateToken(token: string) {
     try {
       const decoded = await this.jwtService.verify(token);
-      console.log("decoded: ",decoded);
 
       const user={
         id: decoded.id,
@@ -62,7 +61,6 @@ export class AuthsService {
         role: decoded.role,}
       
       const existingUser = await this.userClient.send('findUserById', { id: decoded.id, user }).toPromise();
-      console.log("user: ",user);
       
       return existingUser;
     } catch (error) {
