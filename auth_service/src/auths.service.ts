@@ -14,7 +14,6 @@ export class AuthsService {
   async validateUser(loginUserDto: LoginUserDto) {
     try {
       const user = await this.userClient.send('validateUser', loginUserDto).toPromise();
-      
       if (!user) {
         return null;
       }
@@ -53,8 +52,19 @@ export class AuthsService {
   async validateToken(token: string) {
     try {
       const decoded = await this.jwtService.verify(token);
-      const user = await this.userClient.send('findUserById', decoded.sub).toPromise();
-      return user;
+      console.log("decoded: ",decoded);
+
+      const user={
+        id: decoded.id,
+        email:decoded.email,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName,
+        role: decoded.role,}
+      
+      const existingUser = await this.userClient.send('findUserById', { id: decoded.id, user }).toPromise();
+      console.log("user: ",user);
+      
+      return existingUser;
     } catch (error) {
       throw new UnauthorizedException('Invalid token');
     }

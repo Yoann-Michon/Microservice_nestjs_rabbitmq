@@ -109,13 +109,21 @@ export class UsersService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<boolean> {
+  async validateUser(email: string, password: string): Promise<User| null> {
     try {
       const user = await this.findOneByEmail(email);
+      
       if (!user) {
-        return false;
+        return null;
       }
-      return await bcrypt.compare(password, user.password);
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return null;
+    }
+
+    return user;
     } catch (error) {
       throw new InternalServerErrorException(`Error validating user: ${error.message}`);
     }

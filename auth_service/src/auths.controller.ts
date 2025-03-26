@@ -9,10 +9,10 @@ export class AuthsController {
   constructor(private readonly authsService: AuthsService) {}
 
   @MessagePattern('login')
-  async login(@Payload() LoginUserDto: LoginUserDto) {
+  async login(@Payload() loginUserDto: LoginUserDto) {
     console.log("----authservice login----");
-    
-    return await this.authsService.login(LoginUserDto);
+    console.log(loginUserDto);
+    return await this.authsService.login(loginUserDto);
   }
 
   @MessagePattern('register')
@@ -20,5 +20,10 @@ export class AuthsController {
     console.log("----authservice createdto----");
     console.log(createAuthDto);
     return await this.authsService.register(createAuthDto);
+  }
+
+  @MessagePattern("validate_token")
+  async validateToken(@Payload() token: string) {
+    return await this.authsService.validateToken(token);
   }
 }

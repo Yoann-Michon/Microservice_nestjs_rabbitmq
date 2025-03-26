@@ -6,9 +6,9 @@ services:
       - "4000:4000"
     depends_on:
       - auth-service
-      - event-service
+      #- event-service
       - user-service
-      - notification-service
+      #- notification-service
       - rabbitmq
     env_file:
       - ./api_gateway/.env

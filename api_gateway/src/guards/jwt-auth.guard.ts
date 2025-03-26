@@ -3,7 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { IS_PUBLIC_KEY } from './public.decorator';
-import { ROLES_KEY } from './roles.decorator';
+import { log } from 'console';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -12,10 +12,7 @@ export class JwtAuthGuard implements CanActivate {
     private reflector: Reflector
   ) {}
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const authHeader = request.headers.authorization;
-
+  async canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
       context.getHandler(),
       context.getClass(),
@@ -24,36 +21,37 @@ export class JwtAuthGuard implements CanActivate {
     if (isPublic) {
       return true;
     }
+    
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers.authorization?.split(' ')[1];
 
-    if (!authHeader) {
-      throw new UnauthorizedException('Token not found');
+    if (!token) {
+      throw new UnauthorizedException('Authentication token is missing');
     }
-
-    const token = authHeader.split(' ')[1];
 
     try {
-      const user = await firstValueFrom(
-        this.authServiceClient.send('validate_token', { token })
-      );
-
-      if (!user) {
-        throw new UnauthorizedException('Invalid token');
-      }
-
-      request.user = user;
+      log("-----try catch-------");
       
-      const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
-        context.getHandler(),
-        context.getClass(),
-      ]);
-
-      if (requiredRoles && !requiredRoles.some(role => user.roles.includes(role))) {
-        throw new ForbiddenException('You do not have the required permissions');
+      const user = await this.authServiceClient.send('validate_token', token).toPromise();
+      log("user----",user);
+      
+      if (!user) {
+        throw new UnauthorizedException('Invalid user');
       }
-
+      
+      request.user = user;
       return true;
     } catch (error) {
-      throw new UnauthorizedException('Authentication failed');
+      console.log(error);
+      
+      throw new UnauthorizedException('Invalid authentication token');
     }
+  }
+
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw err || new UnauthorizedException('Authentication required');
+    }
+    return user;
   }
 }

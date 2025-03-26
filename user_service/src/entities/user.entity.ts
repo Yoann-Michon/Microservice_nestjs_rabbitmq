@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, Unique, OneToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Unique} from 'typeorm';
 import { Role } from './role.enum';
 import { Exclude } from 'class-transformer';
 
@@ -8,8 +8,8 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: false })
   @Exclude()
+  @Column({ nullable: false })
   password: string;
 
   @Column({ nullable: false })

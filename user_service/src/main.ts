@@ -4,6 +4,7 @@ import { UsersModule } from './users.module';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice(UsersModule,{
+    logger: ['log', 'warn', 'error', 'debug', 'verbose'], 
     transport: Transport.RMQ,
     options: {
       urls: [process.env.RABBITMQ_HOST],

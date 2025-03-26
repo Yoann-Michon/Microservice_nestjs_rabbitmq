@@ -14,7 +14,6 @@ export class UsersController {
   @HttpCode(HttpStatus.CREATED)
   async create(@Payload() createUserDto: CreateUserDto) {
     try {
-      console.log('createUserDto:', createUserDto);
       
       const user = await this.usersService.create(createUserDto);
       return {
@@ -220,8 +219,8 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   async validateUser(@Payload() data: { email: string; password: string }) {
     try {
-      const isValid = await this.usersService.validateUser(data.email, data.password);
-      return { isValid };
+      const user = await this.usersService.validateUser(data.email, data.password);
+      return user ;
     } catch (error) {
       throw new RpcException({
         code: HttpStatus.INTERNAL_SERVER_ERROR,
