@@ -10,21 +10,19 @@ export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
   @MessagePattern('createTicket')
-  async createTicket(@Payload() createTicketDto: CreateTicketDto) {
-    return await this.ticketsService.createTicket(createTicketDto);
-  }
+async createTicket(@Payload() payload: { event:any ,user:any}) {
+  return await this.ticketsService.createTicket(payload.event,payload.user);
+}
 
   @MessagePattern('updateTicket')
   async updateTicket(@Payload() payload: { updateTicketDto: UpdateTicketDto, user: any }) {
     return await this.ticketsService.updateTicket(payload.updateTicketDto, payload.user);
   }
 
+  //todo
   @MessagePattern('processPayment')
-  async processPayment(@Payload() payload: { ticketId: number; amount: number; user: any; event: any }) {
-    const ticket = await this.ticketsService.findTicketById(payload.ticketId, payload.user);
-    if (!ticket) throw new BadRequestException('Ticket not found');
-    
-    return await this.ticketsService.processPayment(ticket, payload);
+  async processPayment(@Payload() payload: { paymenData:any, user: any}) {    
+    return await this.ticketsService.processPayment(payload.paymenData, payload.user);
   }
 
   @MessagePattern('validateTicket')
@@ -38,18 +36,23 @@ export class TicketsController {
   }
 
   @MessagePattern('findUserTickets')
-  async findUserTickets(@Payload() payload: { userId: number; user: any }) {
-    if (payload.user.role !== Role.ADMIN && payload.user.id !== payload.userId) {
-      throw new ForbiddenException('Access denied: You can only retrieve your own tickets');
-    }
-    return await this.ticketsService.findUserTickets(payload.userId);
+  async findUserTickets(@Payload() user:any) {
+    return await this.ticketsService.findUserTickets(user.id);
   }
 
   @MessagePattern('findEventTickets')
-  async findEventTickets(@Payload() payload: { eventId: number; user: any }) {
+  async findEventTickets(@Payload() payload: { id: number; user: any }) {
     if (payload.user.role !== Role.ADMIN && payload.user.role !== Role.EVENTCREATOR) {
       throw new ForbiddenException('Access denied: Only admins and event creators can view event tickets');
     }
-    return await this.ticketsService.findEventTickets(payload.eventId);
+    return await this.ticketsService.findEventTickets(payload.id);
+  }
+
+  @MessagePattern('deleteTicket')
+  async deleteTicket(@Payload() payload: { id: number; user: any }) {
+    if (payload.user.role !== Role.ADMIN && payload.user.role !== Role.EVENTCREATOR) {
+      throw new ForbiddenException('Access denied: Only admins and event creators can delete event tickets');
+    }
+    return await this.ticketsService.deleteTicket(payload.id, payload.user);
   }
 }

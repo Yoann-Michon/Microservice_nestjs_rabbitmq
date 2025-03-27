@@ -69,8 +69,8 @@ export class EventsController {
   }
 
   @MessagePattern('updateEvent')
-  async update(@Payload() payload: {id:number, updateEventDto: UpdateEventDto,user: any}) {
-    const { id, updateEventDto, user } = payload;
+  async update(@Payload() payload: {id:number, updateEvent: UpdateEventDto,user: any}) {
+    const { id, updateEvent, user } = payload;
 
     if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
       throw new RpcException({
@@ -79,7 +79,7 @@ export class EventsController {
       });
     }
     
-    if (user.role === Role.EVENTCREATOR && user.id !== updateEventDto.createdBy) {
+    if (user.role === Role.EVENTCREATOR && user.id !== updateEvent.createdBy) {
       throw new RpcException({
         status: HttpStatus.FORBIDDEN,
         message: 'Event creators can only update their own events',
@@ -87,7 +87,7 @@ export class EventsController {
     }
     
     try {
-      const updatedEvent = await this.eventsService.update(id,updateEventDto);
+      const updatedEvent = await this.eventsService.update(id,updateEvent);
 
       if (!updatedEvent) {
         throw new RpcException({

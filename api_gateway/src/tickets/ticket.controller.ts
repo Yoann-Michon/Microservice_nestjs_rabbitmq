@@ -22,7 +22,7 @@ import {
   
     @Get('/me')
     async findUserTickets(@Request() req) {
-      return await this.ticketsService.findUserTickets(req.user.id);
+      return await this.ticketsService.findUserTickets(req.user);
     }
   
     @Get('/event/:id')

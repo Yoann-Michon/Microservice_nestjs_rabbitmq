@@ -39,8 +39,8 @@ export class EventsController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.EVENTCREATOR)
-  async updateEventById(@Param('id') id: number, @Body() event:any, @Request() req) {
-    return await this.eventsService.updateEventById(id, event, req.user);
+  async updateEventById(@Param('id') id: number, @Body() updateEvent:any, @Request() req) {
+    return await this.eventsService.updateEventById(id, updateEvent, req.user);
   }
 
   @Delete(':id')

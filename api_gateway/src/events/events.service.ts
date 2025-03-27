@@ -40,8 +40,8 @@ export class EventsService {
         return await this.eventsServiceClient.send('createEvent', { event, user }).toPromise();
     }
 
-    async updateEventById(id: number, event: any, user: any) {
-        return await this.eventsServiceClient.send('updateEvent', { id, event, user }).toPromise();
+    async updateEventById(id: number, updateEvent: any, user: any) {
+        return await this.eventsServiceClient.send('updateEvent', { id, updateEvent, user }).toPromise();
     }
 
     async deleteEventById(id: number, user: any) {

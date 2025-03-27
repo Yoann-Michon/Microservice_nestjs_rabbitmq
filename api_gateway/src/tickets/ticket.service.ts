@@ -8,20 +8,23 @@ constructor(@Inject("TICKET_SERVICE") private readonly ticketServiceClient: Clie
     ) { }
 
     async createTicket(event: any, user: any) {
-        return await this.ticketServiceClient.send('createTicket', { eventId: event.id, userId: user.id }).toPromise();
+        return await this.ticketServiceClient.send('createTicket', { event, user }).toPromise();
     }
     
     
-     async updateTicket(
-        id: number,
-        ticketData:any,
-        user:any
-      ){
-        return await this.ticketServiceClient.send('updateTicket', {id,ticketData,user}).toPromise();
-      }
+    async updateTicket(id: number, ticketData: any, user: any) {
+      return await this.ticketServiceClient.send('updateTicket', { 
+        updateTicketDto: { id, ...ticketData }, 
+        user 
+      }).toPromise();
+    }
+    
     
       async processPayment(paymentData:any , user:any){
-        return await this.ticketServiceClient.send('processPayment', {paymentData,user}).toPromise();
+        return await this.ticketServiceClient.send('processPayment', {
+          paymentData,
+          user
+        }).toPromise();
       }
     
       async validateTicket(id: number,user:any){
@@ -32,8 +35,8 @@ constructor(@Inject("TICKET_SERVICE") private readonly ticketServiceClient: Clie
         return await this.ticketServiceClient.send('findTicketById', {id,user}).toPromise();
       }
     
-      async findUserTickets(userId: number){
-        return await this.ticketServiceClient.send('findUserTickets', userId).toPromise();
+      async findUserTickets(user:any){
+        return await this.ticketServiceClient.send('findUserTickets', user).toPromise();
       }
     
       async findEventTickets(id: number,user:any){

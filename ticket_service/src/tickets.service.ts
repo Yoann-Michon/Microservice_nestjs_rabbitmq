@@ -19,12 +19,15 @@ export class TicketsService {
     @Inject('NOTIFICATION_SERVICE') private notificationServiceClient: ClientProxy,
   ) {}
 
-  async createTicket(createTicketDto: CreateTicketDto) {
-    const ticket = this.ticketRepository.create({
-      ...createTicketDto,
+  async createTicket(event:any,user:any) {
+
+    const createTicketDto: Partial<CreateTicketDto >={
+      userId : user.id,
+      eventId : event.id,
       ticketNumber: uuidv4(),
       status: Status.RESERVED,
-    });
+    }
+    const ticket = this.ticketRepository.create(createTicketDto);
     
     return await this.ticketRepository.save(ticket);
   }
@@ -45,17 +48,19 @@ export class TicketsService {
       ...updateTicketDto, 
       status: updateTicketDto.status as Status 
     };
+  
     return await this.ticketRepository.save(updatedTicket);
   }
   
-  async findTicketById(ticketId: number, user?: any) {
+  
+  async findTicketById(ticketId: number, user: any) {
     const ticket = await this.ticketRepository.findOne({
       where: { id: ticketId },
       relations: ['payments'],
     });
   
     if (!ticket) {
-      throw new Error('Ticket not found');
+      return null
     }
   
     if (user && user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR && ticket.userId !== user.id) {
@@ -137,4 +142,14 @@ export class TicketsService {
       relations: ['payments']
     });
   }
+  
+  async deleteTicket(id: number, user: any) {
+    const ticket = await this.findTicketById(id, user);
+    if (!ticket) {
+      return { message: 'Ticket not found' };
+    }
+    await this.ticketRepository.delete({ id: ticket.id });
+    return { message: 'Ticket deleted successfully' }; 
+  }
+  
 }

@@ -16,5 +16,5 @@ export class CreateTicketDto {
 
     @IsOptional()
     @IsEnum(Status)
-    status: string;
+    status: Status;
 }
