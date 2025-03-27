@@ -19,24 +19,24 @@ export class EventsService {
     }
 
     async createEvent(event: any, files: Express.Multer.File[], user: any) {
-        log("----------EVENT SERVICE----------");
-
+    
         if (!files || files.length === 0) {
             throw new BadRequestException('At least one image is required');
         }
-        log("files: ",files)
+    
         const imageUrls = await this.imgBBService.uploadImages(files);
-        console.log("imageUrls: ", imageUrls);
-
+    
         if (!imageUrls || imageUrls.length === 0) {
             throw new BadRequestException('Failed to upload images');
         }
+    
+        if (typeof event === 'string') {
+            event = JSON.parse(event);
+        }
+    
         event.images = imageUrls;
-        log("--------------------");
-        log("event: ", event);
-
-        log("--------------------");
-
+        event.createdBy = user.id;
+    
         return await this.eventsServiceClient.send('createEvent', { event, user }).toPromise();
     }
 
@@ -47,4 +47,10 @@ export class EventsService {
     async deleteEventById(id: number, user: any) {
         return await this.eventsServiceClient.send('removeEvent', { id, user }).toPromise();
     }
+
+
+    async findAllByCreator(user: any) {
+        return await this.eventsServiceClient.send('removeEvent', user.id).toPromise();
+    }
+    
 }

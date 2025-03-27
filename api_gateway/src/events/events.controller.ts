@@ -42,4 +42,10 @@ export class EventsController {
   async deleteEventById(@Param('id') id: number, @Request() req) {
     return await this.eventsService.deleteEventById(id, req.user);
   }
+
+  @Get('me')
+  @Roles(Role.ADMIN, Role.EVENTCREATOR)
+  async findAllByCreator(@Request() req) {
+    return await this.eventsService.findAllByCreator(req.user);
+  }
 }

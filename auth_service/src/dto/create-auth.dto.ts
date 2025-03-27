@@ -14,9 +14,9 @@ export class CreateAuthDto {
 
     @IsNotEmpty()
     @Length(3, 50)
-    firstName: string;
+    firstname: string;
 
     @IsNotEmpty()
     @Length(3, 50)
-    lastName: string;
+    lastname: string;
 }

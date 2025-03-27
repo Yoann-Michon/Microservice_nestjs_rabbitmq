@@ -4,14 +4,38 @@ import { EventService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { Role } from './entities/role.enum';
+import { log } from 'console';
 
 @Controller("events")
 export class EventsController {
   constructor(private readonly eventsService: EventService) {}
 
   @MessagePattern('createEvent')
-  async create(@Payload() createEventDto: CreateEventDto) {
-    return await this.eventsService.create(createEventDto);
+  async create(@Payload() payload:{event: CreateEventDto,user:any}) {
+
+    const { event, user } = payload;
+
+    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
+      throw new RpcException({
+        status: HttpStatus.FORBIDDEN,
+        message: 'Access denied',
+      });
+    }
+
+    try {
+      await this.eventsService.create(event);
+      return {
+        statusCode: HttpStatus.OK,
+        message: 'Event created successfully',
+        event,
+      };
+    } catch (error) {
+      throw new RpcException({
+        code: error?.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error?.message || 'Error while creating event',
+        details: error?.details || '',
+      });
+    }
   }
 
   @MessagePattern('findAllEvents')
@@ -128,5 +152,10 @@ export class EventsController {
         details: error?.details || '',
       });
     }
+  }
+
+  @MessagePattern('findAllByCreator')
+  async findAllByCreator(@Payload() id: number){
+    return await this.eventsService.findAllByCreator(id);
   }
 }

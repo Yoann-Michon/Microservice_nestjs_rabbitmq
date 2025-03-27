@@ -56,8 +56,8 @@ export class AuthsService {
       const user={
         id: decoded.id,
         email:decoded.email,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
+        firstname: decoded.firstname,
+        lastname: decoded.lastname,
         role: decoded.role,}
       
       const existingUser = await this.userClient.send('findUserById', { id: decoded.id, user }).toPromise();

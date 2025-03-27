@@ -9,7 +9,6 @@ import {
     IsArray
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { CreateAddressDto } from './create-address.dto';
 
 export class CreateEventDto {
     @IsNotEmpty({ message: 'Event name is required' })
@@ -30,9 +29,9 @@ export class CreateEventDto {
     @Type(() => Date)
     endDate: Date;
 
-    @ValidateNested()
-    @Type(() => CreateAddressDto)
-    address: CreateAddressDto;
+    @IsNotEmpty({ message: 'Address is required' })
+    @IsString()
+    address: string;
 
     @IsNotEmpty({ message: 'Price is required' })
     @IsNumber({ maxDecimalPlaces: 2 })
@@ -42,6 +41,7 @@ export class CreateEventDto {
     @IsNumber()
     maxCapacity: number;
 
+    @IsOptional()
     @IsNotEmpty({ message: 'Number of available seats required' })
     @IsNumber()
     availableSeat: number;

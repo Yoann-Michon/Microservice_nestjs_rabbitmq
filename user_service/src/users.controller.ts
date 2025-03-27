@@ -5,6 +5,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Role } from './entities/role.enum';
+import { log } from 'console';
 
 @Controller('users')
 export class UsersController {
@@ -30,8 +31,7 @@ export class UsersController {
   }
 
   @MessagePattern('findAllUsers')
-  async findAll(@Payload() payload: { user: Partial<User> }) {
-    const { user } = payload;
+  async findAll(@Payload() user: Partial<User>) {
 
     if (user.role !== Role.ADMIN) {
       throw new RpcException({

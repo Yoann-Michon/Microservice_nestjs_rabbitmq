@@ -2,37 +2,29 @@ import { BadRequestException, ConflictException, Injectable, NotFoundException }
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { AddressService } from './address.service';
 import { Repository } from 'typeorm';
 import { Event } from './entities/event.entity';
-import { Address } from './entities/address.entity';
+import { log } from 'console';
 
 @Injectable()
 export class EventService {
   constructor(
     @InjectRepository(Event)
     private eventRepository: Repository<Event>,
-    private addressService: AddressService,
   ) { }
   
     async create(createEventDto: CreateEventDto): Promise<Event> {
       const startDate = new Date(createEventDto.startDate);
       const endDate = new Date(createEventDto.endDate);
       
-      if (startDate >= endDate) {
+      if (startDate > endDate) {
         throw new BadRequestException('Start date must be before end date');
       }
   
       if (createEventDto.availableSeat > createEventDto.maxCapacity) {
         throw new BadRequestException('Available seats cannot exceed maximum capacity');
       }
-  
-      let address: Address;
-      try {
-        address = await this.addressService.create(createEventDto.address);
-      } catch (error) {
-        throw new BadRequestException('Unable to create address');
-      }
+
   
       const existingEvent = await this.eventRepository.findOne({
         where: { 
@@ -47,7 +39,6 @@ export class EventService {
   
       const eventData: Partial<Event> = {
         ...createEventDto,
-        address,
         creationDate: new Date(),
         startDate,
         endDate,
@@ -64,18 +55,13 @@ export class EventService {
 
 
   async findAll(): Promise<Event[] | []> {
-    const events = await this.eventRepository.find({
-      relations: ['address']
-    });
+    const events = await this.eventRepository.find();
 
     return events ? events.filter(event => event.isActive === true): [];
   }
 
   async findOne(id: number): Promise<Event | null> {
-    const event = await this.eventRepository.findOne({
-      where: { id },
-      relations: ['address']
-    });
+    const event = await this.eventRepository.findOneBy({id});
     return event;
   }
 
@@ -91,10 +77,6 @@ export class EventService {
       throw new BadRequestException('Start date must be before end date');
     }
 
-    if (updateEventDto.address) {
-      await this.addressService.update(event.address.id, { ...updateEventDto.address, id: event.address.id });
-    }
-
     return await this.eventRepository.save(this.eventRepository.merge(event, updateEventDto));
   }
 
@@ -106,8 +88,13 @@ export class EventService {
     }
 
     await this.eventRepository.remove(event);
-    if (event.address) {
-      await this.addressService.remove(event.address.id);
-    }
+  }
+
+  async findAllByCreator(creatorId: number): Promise<Event[]> {
+    return await this.eventRepository.find({
+      where: {
+        createdBy: creatorId, 
+      },
+    });
   }
 }

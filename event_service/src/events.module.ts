@@ -2,17 +2,15 @@ import { Module } from '@nestjs/common';
 import { EventService } from './events.service';
 import { EventsController } from './events.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Address } from './entities/address.entity';
 import { Event } from './entities/event.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { AddressService } from './address.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   controllers: [EventsController],
-  providers: [EventService, AddressService],
+  providers: [EventService],
   imports: [
-    TypeOrmModule.forFeature([Event, Address]),
+    TypeOrmModule.forFeature([Event]),
     ConfigModule.forRoot({ envFilePath: '.env' }),
   TypeOrmModule.forRootAsync({
     imports: [ConfigModule],
@@ -24,7 +22,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       username: configService.get<string>("DB_USERNAME"),
       password: configService.get<string>("DB_PASSWORD"),
       database: configService.get<string>("DB_NAME"),
-      entities: [Event, Address],
+      entities: [Event],
       synchronize: true,
     }),
   }),

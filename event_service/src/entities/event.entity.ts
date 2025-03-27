@@ -1,5 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
-import { Address } from './address.entity';
+import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm';
 
 @Entity('events')
 export class Event {
@@ -18,9 +17,8 @@ export class Event {
     @Column({ nullable: false, type: 'timestamp' })
     endDate: Date;
 
-    @OneToOne(() => Address, { cascade: true, eager: true })
-    @JoinColumn()
-    address: Address;
+    @Column({ nullable: false })
+    address: string;
 
     @Column({ type: 'decimal', precision: 10, scale: 2 })
     price: number;
@@ -42,4 +40,9 @@ export class Event {
 
     @Column('simple-array')
     images: string[];
+
+    @BeforeInsert()
+    setAvailableSeats() {
+        this.availableSeat = this.maxCapacity;
+    }
 }
