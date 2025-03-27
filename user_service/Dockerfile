@@ -8,8 +8,16 @@ RUN npm install
 
 COPY . .
 
+COPY backup_mariadb.sh /usr/local/bin/backup_mariadb.sh
+
+RUN chmod +x /usr/local/bin/backup_mariadb.sh
+
+RUN apk add --no-cache cronie
+
+RUN echo "0 2 * * * /usr/local/bin/backup_mariadb.sh" >> /etc/crontab
+
 RUN npm run build
 
 EXPOSE 4004
 
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "crond && npm run start"]

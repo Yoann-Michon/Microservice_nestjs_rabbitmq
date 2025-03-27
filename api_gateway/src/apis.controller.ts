@@ -47,7 +47,6 @@ export class ApisController {
         firstname: 'John',
         lastname: 'Doe',
         role: 'user',
-        pseudo: 'Jonny'
       },
     },
   })
@@ -59,7 +58,6 @@ export class ApisController {
         password: 'password',
         firstname: 'John',
         lastname: 'Doe',
-        pseudo: 'Jonny'
       },
     },
   })

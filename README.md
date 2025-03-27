@@ -172,7 +172,4 @@ L'authentification est gérée via **JWT** (JSON Web Token). Un utilisateur doit
 - [@AlberolaConstant](https://github.com/AlberolaConstant)
 
 ## Repositories
-- Backend 
->https://github.com/Yoann-Michon/Test_Unit_Fonc_E2E
-- front 
->https://github.com/Yoann-Michon/Test_Unit_Fonc_E2E_Front
+>https://github.com/Yoann-Michon/Microservice_nestjs_rabbitmq

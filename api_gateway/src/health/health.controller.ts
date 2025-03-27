@@ -52,7 +52,6 @@ export class HealthController {
         this.checkServiceHealth('notification-service', 'http://notification-service:4006/health'),
       ]);
 
-      // Affichage sous forme de tableau
       console.table(healthResults, ['service', 'status', 'message']);
 
       return {
