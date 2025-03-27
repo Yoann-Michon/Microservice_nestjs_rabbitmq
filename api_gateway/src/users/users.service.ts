@@ -8,6 +8,10 @@ export class UsersService {
     @Inject('USER_SERVICE') private readonly userServiceClient: ClientProxy,
   ) {}
 
+  async createUser(createUserDto:any){
+    return await this.userServiceClient.send("createUser",createUserDto).toPromise();
+  } 
+
   async getAllUsers(user: any) {
     return await this.userServiceClient.send('findAllUsers', user).toPromise();
   }

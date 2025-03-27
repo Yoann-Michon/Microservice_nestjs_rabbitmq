@@ -8,7 +8,6 @@ export class ApisService {
     @Inject('AUTH_SERVICE') private readonly authServiceClient: ClientProxy,
   ) {}
 
-  //auths
   async login(login:any) {
     return await this.authServiceClient.send('login', login).toPromise();
   }

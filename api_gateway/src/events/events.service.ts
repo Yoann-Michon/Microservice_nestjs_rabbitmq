@@ -2,7 +2,6 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { UploadPictureService } from '@upload/upload-picture';
-import { log } from 'console';
 
 @Injectable()
 export class EventsService {

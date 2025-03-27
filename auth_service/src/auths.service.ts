@@ -1,4 +1,4 @@
-import { Inject, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ClientProxy } from '@nestjs/microservices';
 import { LoginUserDto } from './dto/login.dto';
@@ -29,7 +29,7 @@ export class AuthsService {
     try {
       const user = await this.validateUser(loginDto);
       if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
+        return { message: 'Invalid credentials' };
       }
 
       return {
@@ -37,15 +37,18 @@ export class AuthsService {
         message: 'Login successful',
       };
     } catch (error) {
-      throw new Error('Error during login');
+      return { message: 'Error during login: ' + error.message };
     }
   }
 
   async register(createAuthDto: CreateAuthDto) {
     try {
-      return this.userClient.send('createUser', createAuthDto);
+      await this.userClient.send('createUser', createAuthDto).toPromise();
+      return {
+        message: 'User created successfully',
+      };
     } catch (error) {
-      throw new InternalServerErrorException(`Error during user registration: ${error.message}`);
+      return { message: 'Error during registration: ' + error.message };
     }
   }
 
