@@ -44,15 +44,7 @@ export class EventsController {
   }
 
   @MessagePattern('findOneEvent')
-  async findOne(@Payload() payload: {id: number, user: any}) {
-    const { id, user } = payload;
-    
-    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
-      throw new RpcException({
-        status: HttpStatus.FORBIDDEN,
-        message: 'Access denied',
-      });
-    }
+  async findOne(@Payload() id:number) {
     try {
       const event = await this.eventsService.findOne(id);
 
@@ -130,7 +122,7 @@ export class EventsController {
     }
 
     try {
-      const event = await this.findOne({ id, user });
+      const event = await this.findOne(id);
 
       if (user.role === Role.EVENTCREATOR && user.id !== event.event.createdBy) {
         throw new RpcException({

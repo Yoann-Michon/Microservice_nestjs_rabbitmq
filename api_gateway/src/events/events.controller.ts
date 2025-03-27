@@ -11,17 +11,22 @@ import { Public } from '../guards/public.decorator';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EventsController {
   constructor(private readonly eventsService: EventsService) {}
-
+  
   @Get()
   @Public()
   async getAllEvents() {
     return await this.eventsService.getAllEvents();
   }
+  
+  @Get('/me')
+  @Roles(Role.ADMIN, Role.EVENTCREATOR)
+  async findAllByCreator(@Request() req) {
+    return await this.eventsService.findAllByCreator(req.user);
+  }
 
   @Get(':id')
-  @Roles(Role.ADMIN, Role.EVENTCREATOR)
-  async getEventById(@Param('id') id: number, @Req() req) {
-    return await this.eventsService.getEventById(id, req.user);
+  async getEventById(@Param('id') id: number) {
+    return await this.eventsService.getEventById(id);
   }
 
   @Post()
@@ -43,9 +48,4 @@ export class EventsController {
     return await this.eventsService.deleteEventById(id, req.user);
   }
 
-  @Get('me')
-  @Roles(Role.ADMIN, Role.EVENTCREATOR)
-  async findAllByCreator(@Request() req) {
-    return await this.eventsService.findAllByCreator(req.user);
-  }
 }

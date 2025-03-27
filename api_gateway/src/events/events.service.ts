@@ -14,8 +14,8 @@ export class EventsService {
         return await this.eventsServiceClient.send('findAllEvents', {}).toPromise();
     }
 
-    async getEventById(id: number, user: any) {
-        return await this.eventsServiceClient.send('findOneEvent', { id, user }).toPromise();
+    async getEventById(id: number) {
+        return await this.eventsServiceClient.send('findOneEvent', id).toPromise();
     }
 
     async createEvent(event: any, files: Express.Multer.File[], user: any) {
@@ -48,9 +48,8 @@ export class EventsService {
         return await this.eventsServiceClient.send('removeEvent', { id, user }).toPromise();
     }
 
-
     async findAllByCreator(user: any) {
-        return await this.eventsServiceClient.send('removeEvent', user.id).toPromise();
+        return await this.eventsServiceClient.send('findAllByCreator', user.id).toPromise();
     }
     
 }

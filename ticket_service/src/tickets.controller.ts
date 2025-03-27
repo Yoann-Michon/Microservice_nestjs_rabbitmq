@@ -1,29 +1,41 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TicketsService } from './tickets.service';
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
 
 @Controller()
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) {}
 
-  @MessagePattern('bookTicket')
-  async bookTicket(@Payload() data: { userId: number; eventId: number }) {
-    return await this.ticketsService.bookTicket(data.userId, data.eventId);
+  @MessagePattern('createTicket')
+  async createTicket(@Payload() createTicketDto: CreateTicketDto) {
+    return await this.ticketsService.createTicket(createTicketDto);
   }
 
-  @MessagePattern('getTicketById')
-  async getTicketById(@Payload() ticketId: number) {
-    return await this.ticketsService.getTicketById(ticketId);
+  @MessagePattern('updateTicket')
+  async updateTicket(@Payload() updateTicketDto: UpdateTicketDto) {
+    return await this.ticketsService.updateTicket(updateTicketDto);
   }
 
-  @MessagePattern('getUserTickets')
-  async getUserTickets(@Payload() userId: number) {
-    return await this.ticketsService.getUserTickets(userId);
-  }
+  @MessagePattern('processPayment')
+  async processPayment(@Payload() payload: { 
+    ticketId: number, 
+    amount: number, 
+    user: any, 
+    event: any 
+  }) {
+    const ticket = await this.ticketsService.findTicketById(payload.ticketId);
+    
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
 
-  @MessagePattern('getUsersForEvent')
-  async getUsersForEvent(@Payload() eventId: number) {
-    return await this.ticketsService.getUsersForEvent(eventId);
+    return await this.ticketsService.processPayment(ticket, {
+      amount: payload.amount,
+      user: payload.user,
+      event: payload.event
+    });
   }
 
   @MessagePattern('validateTicket')
@@ -31,8 +43,18 @@ export class TicketsController {
     return await this.ticketsService.validateTicket(ticketId);
   }
 
-  @MessagePattern('payForTicket')
-  async payForTicket(@Payload() data: { user: any; event: any; amount: number }) {
-    return await this.ticketsService.payForTicket(data);
+  @MessagePattern('findTicketById')
+  async findTicketById(@Payload() ticketId: number) {
+    return await this.ticketsService.findTicketById(ticketId);
+  }
+
+  @MessagePattern('findUserTickets')
+  async findUserTickets(@Payload() userId: number) {
+    return await this.ticketsService.findUserTickets(userId);
+  }
+
+  @MessagePattern('findEventTickets')
+  async findEventTickets(@Payload() eventId: number) {
+    return await this.ticketsService.findEventTickets(eventId);
   }
 }

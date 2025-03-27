@@ -2,9 +2,12 @@ import { Injectable, BadRequestException, InternalServerErrorException, Inject }
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket } from './entities/ticket.entity';
-import { v4 as uuidv4 } from 'uuid';
 import { Payment } from './entities/payment.entity';
+import { v4 as uuidv4 } from 'uuid';
 import { ClientProxy } from '@nestjs/microservices';
+import { CreateTicketDto } from './dto/create-ticket.dto';
+import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { Status } from './entities/status.enum';
 
 @Injectable()
 export class TicketsService {
@@ -14,34 +17,69 @@ export class TicketsService {
     @Inject('NOTIFICATION_SERVICE') private notificationServiceClient: ClientProxy,
   ) {}
 
-  async bookTicket(userId: number, event: any) {
+  async createTicket(createTicketDto: CreateTicketDto) {
     const ticket = this.ticketRepository.create({
-      userId,
-      eventId: event.id,
-      ticketNumber: uuidv4(),
+      userId: createTicketDto.userId,
+      eventId: createTicketDto.eventId,
+      ticketNumber: uuidv4()
     });
     
-    return await this.ticketRepository.save(ticket);;
+    return await this.ticketRepository.save(ticket);
   }
 
-  async getTicketById(ticketId: number) {
-    return this.ticketRepository.findOne({ where: { id: ticketId } });
+  async updateTicket(updateTicketDto: UpdateTicketDto) {
+    const ticket = await this.ticketRepository.findOne({ where: { id: updateTicketDto.id } });
+    
+    if (!ticket) {
+      throw new BadRequestException('Ticket not found');
+    }
+
+
+    const updatedTicket = {...ticket, ...UpdateTicketDto}
+    return await this.ticketRepository.save(updatedTicket);
   }
 
-  async getUserTickets(userId: number) {
-    return this.ticketRepository.find({ where: { userId } });
-  }
+  async processPayment(ticket: Ticket, paymentData: { amount: number; user: any; event: any }) {
+    const { amount, user, event } = paymentData;
 
-  async getUsersForEvent(eventId: number): Promise<number[]> {
+    const paymentSuccess = true;
+    
+    if (!paymentSuccess) {
+      throw new InternalServerErrorException('Payment failed');
+    }
 
-    const tickets = await this.ticketRepository.find({
-      where: { eventId },
-      select: ['userId'],
+    const payment = this.paymentRepository.create({
+      amount: amount,
+      method: 'card',
+      paymentDate: new Date(),
+      ticket: ticket,
+      ticketId: ticket.id
+    });
+    await this.paymentRepository.save(payment);
+
+    ticket.status = Status.PAID;
+    await this.ticketRepository.save(ticket);
+
+    this.notificationServiceClient.emit('createNotification', {
+      notification: {
+        to: user.email,
+        subject: 'Payment Successful - Ticket Purchase Confirmation',
+      },
+      event: {
+        name: event.name,
+        startDate: event.startDate,
+        ticketPrice: amount,
+        ticketNumber:ticket.ticketNumber
+      },
     });
 
-    const userIds = [...new Set(tickets.map(ticket => ticket.userId))];
-
-    return userIds;
+    return { 
+      message: 'Payment successful', 
+      payment:{
+        paymentId: payment.id,
+        ticketPrice: amount,
+      }
+    };
   }
 
   async validateTicket(ticketId: number) {
@@ -51,58 +89,33 @@ export class TicketsService {
       throw new BadRequestException('Ticket not found');
     }
 
-    if (ticket.status !== 'reserved') {
-      throw new BadRequestException('Ticket already used or invalid');
+    if (ticket.status !== Status.PAID) {
+      throw new BadRequestException('Ticket is not valid for use');
     }
 
-    ticket.status = 'used';
+    ticket.status = Status.USED;
     await this.ticketRepository.save(ticket);
     return ticket;
   }
 
-  async payForTicket(data: { user: any; event: any; amount: number }): Promise<any> {
-    const { user, event, amount } = data;
-    const ticket = this.ticketRepository.create({
-      userId: user.id,
-      eventId: event.id,
-      ticketNumber: uuidv4(),
-      status: 'reserved',
+  async findTicketById(ticketId: number) {
+    return this.ticketRepository.findOne({ 
+      where: { id: ticketId },
+      relations: ['payments'] 
     });
-    await this.ticketRepository.save(ticket);
+  }
 
-    if (ticket.status !== 'reserved') {
-      throw new BadRequestException('Ticket is not available for payment');
-    }
-
-    const paymentSuccess = true;
-    if (!paymentSuccess) {
-      throw new InternalServerErrorException('Payment failed');
-    }
-
-    const payment = this.paymentRepository.create({
-      amount: amount,
-      paymentDate: new Date(),
-      ticket,
+  async findUserTickets(userId: number) {
+    return this.ticketRepository.find({ 
+      where: { userId },
+      relations: ['payments']
     });
-    await this.paymentRepository.save(payment);
+  }
 
-    ticket.status = 'paid';
-    await this.ticketRepository.save(ticket);
-
-    this.notificationServiceClient.emit('createNotification', {
-      notification: {
-        to: user.email,
-        subject: 'Payment Successful - Your Ticket Purchase Confirmation',
-      },
-      event: {
-        name: event.name,
-        startDate: event.startDate,
-        customerName: event.customerName,
-        ticketPrice: event.ticketPrice,
-        orderId: event.orderId,
-      },
+  async findEventTickets(eventId: number) {
+    return this.ticketRepository.find({ 
+      where: { eventId },
+      relations: ['payments']
     });
-
-    return { message: 'Payment successful', paymentId: payment.id };
   }
 }

@@ -1,0 +1,8 @@
+export enum Status{
+    RESERVED="RESERVED",
+    PAID="PAID",
+    CANCELLED="CANCELLED",
+    REFUNDED="REFUNDED",
+    USED="USED"
+
+}
