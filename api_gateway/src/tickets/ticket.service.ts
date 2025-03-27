@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { ClientProxy, ClientProxyFactory, Transport } from '@nestjs/microservices';
-import { Observable } from 'rxjs';
+import { ClientProxy} from '@nestjs/microservices';
 
 @Injectable()
 export class TicketService {
@@ -8,25 +7,21 @@ export class TicketService {
 constructor(@Inject("TICKET_SERVICE") private readonly ticketServiceClient: ClientProxy,
     ) { }
 
-    async createTicket(event:any,user:any){
-        return await this.ticketServiceClient.send('createTicket', {event,user}).toPromise();
-      }
+    async createTicket(event: any, user: any) {
+        return await this.ticketServiceClient.send('createTicket', { eventId: event.id, userId: user.id }).toPromise();
+    }
+    
     
      async updateTicket(
         id: number,
         ticketData:any,
         user:any
       ){
-        return await this.ticketServiceClient.send('updateTicket', ticketData).toPromise();
+        return await this.ticketServiceClient.send('updateTicket', {id,ticketData,user}).toPromise();
       }
     
-      async processPayment(payload: { 
-        ticketId: number, 
-        amount: number, 
-        user: any, 
-        event: any 
-      }){
-        return await this.ticketServiceClient.send('processPayment', payload).toPromise();
+      async processPayment(paymentData:any , user:any){
+        return await this.ticketServiceClient.send('processPayment', {paymentData,user}).toPromise();
       }
     
       async validateTicket(id: number,user:any){
@@ -46,6 +41,6 @@ constructor(@Inject("TICKET_SERVICE") private readonly ticketServiceClient: Clie
       }
 
     async deleteTicket(id:number,user:any){
-        return await this.ticketServiceClient.send("",{id,user}).toPromise();
+        return await this.ticketServiceClient.send("deleteTicket",{id,user}).toPromise();
     }
 }

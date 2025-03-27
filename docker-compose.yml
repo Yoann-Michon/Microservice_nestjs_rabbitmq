@@ -8,7 +8,8 @@ services:
       - auth-service
       - event-service
       - user-service
-      #- notification-service
+      - notification-service
+      - ticket-service
       - rabbitmq
     env_file:
       - ./api_gateway/.env
@@ -18,6 +19,7 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+    restart: always
 
   auth-service:
     build:
@@ -35,6 +37,7 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+    restart: always
 
   event-service:
     build:
@@ -52,6 +55,7 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+    restart: always
 
   user-service:
     build:
@@ -69,6 +73,7 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+    restart: always
 
   notification-service:
     build:
@@ -86,6 +91,25 @@ services:
       retries: 3
       start_period: 10s
       timeout: 5s
+    restart: always
+
+  ticket-service:
+    build:
+      context: ./ticket_service
+    ports:
+      - "4005:4000"
+    depends_on:
+      - mariadb-ticket
+      - rabbitmq
+    env_file:
+      - ./ticket_service/.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+    restart: always
 
   mariadb-event:
     image: mariadb:10.5
@@ -144,6 +168,25 @@ services:
       start_period: 20s
       timeout: 5s
 
+  mariadb-ticket:
+    image: mariadb:10.5
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ticket_db
+      MYSQL_USER: ticket_user
+      MYSQL_PASSWORD: ticket_password
+    ports:
+      - "33065:3306"
+    volumes:
+      - mariadb-ticket-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 30s
+      retries: 5
+      start_period: 20s
+      timeout: 5s
+
   rabbitmq:
     image: "rabbitmq:3-management"
     ports:
@@ -164,6 +207,8 @@ volumes:
   mariadb-user-data:
     driver: local
   mariadb-notification-data:
+    driver: local
+  mariadb-ticket-data:
     driver: local
   rabbitmq-data:
     driver: local

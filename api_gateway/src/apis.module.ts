@@ -11,6 +11,8 @@ import { UsersController } from './users/users.controller';
 import { NotificationsController } from './notifications/notifications.controller'
 import { UploadPictureModule } from '@upload/upload-picture';
 import { HealthController } from './health/health.controller';
+import { TicketsController } from './tickets/ticket.controller';
+import { TicketService } from './tickets/ticket.service';
 
 @Module({
   imports: [
@@ -81,7 +83,7 @@ import { HealthController } from './health/health.controller';
       },
     ]),
   ],
-  controllers: [ApisController,EventsController,UsersController,NotificationsController,HealthController],
-  providers: [ApisService,EventsService,UsersService,NotificationsService],
+  controllers: [ApisController,EventsController,UsersController,NotificationsController,HealthController,TicketsController],
+  providers: [ApisService,EventsService,UsersService,NotificationsService,TicketService],
 })
 export class ApiGatewayModule {}

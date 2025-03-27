@@ -35,6 +35,7 @@ import {
     }
   
     @Get(':id')
+    @Roles(Role.ADMIN, Role.EVENTCREATOR,Role.USER)
     async getTicketById(
       @Param('id') id: number, 
       @Request() req
@@ -55,10 +56,7 @@ import {
       @Body() paymentData: any, 
       @Request() req
     ) {
-      return await this.ticketsService.processPayment({
-        ...paymentData,
-        user: req.user
-      });
+      return await this.ticketsService.processPayment(paymentData,req.user);
     }
   
     @Patch(':id')

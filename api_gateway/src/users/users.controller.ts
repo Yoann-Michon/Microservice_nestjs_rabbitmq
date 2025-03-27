@@ -26,8 +26,8 @@ export class UsersController {
 
   @Patch(':id')
   @Roles(Role.ADMIN, Role.USER, Role.EVENTCREATOR)
-  async updateUserById(@Param('id') id: number, @Body() user:any, @Request() req) {
-    return await this.usersService.updateUserById(id, user, req.user);
+  async updateUserById(@Param('id') id: number, @Body() updateUser:any, @Request() req) {
+    return await this.usersService.updateUserById(id, updateUser, req.user);
   }
 
   @Delete(':id')

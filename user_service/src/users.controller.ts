@@ -130,8 +130,8 @@ export class UsersController {
   }
 
   @MessagePattern('updateUser')
-  async update(@Payload() payload: { id: number; updateUserDto: UpdateUserDto; user: Partial<User> }) {
-    const { id, updateUserDto, user } = payload;
+  async update(@Payload() payload: { id: number; updateUser: UpdateUserDto; user: Partial<User> }) {
+    const { id, updateUser, user } = payload;
 
     if (user.role !== Role.ADMIN && user.id !== id) {
       throw new RpcException({
@@ -139,15 +139,14 @@ export class UsersController {
         message: 'Access denied',
       });
     }
-
-    if (updateUserDto.role && user.role !== Role.ADMIN) {
+    if (updateUser.role && user.role !== Role.ADMIN) {
       throw new RpcException({
         code: HttpStatus.FORBIDDEN,
         message: 'Only admins can update user roles',
       });
     }
 
-    if (updateUserDto.role && user.role !== Role.ADMIN && user.id === id) {
+    if (updateUser.role && user.role !== Role.ADMIN && user.id === id) {
       throw new RpcException({
         code: HttpStatus.FORBIDDEN,
         message: 'You cannot update your own role',
@@ -155,7 +154,7 @@ export class UsersController {
     }
 
     try {
-      const updatedUser = await this.usersService.update(id, updateUserDto);
+      const updatedUser = await this.usersService.update(id, updateUser);
       if (!updatedUser) {
         throw new RpcException({
           code: HttpStatus.NOT_FOUND,

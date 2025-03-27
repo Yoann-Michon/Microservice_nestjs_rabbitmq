@@ -25,6 +25,7 @@ export class EventsController {
   }
 
   @Get(':id')
+  @Public()
   async getEventById(@Param('id') id: number) {
     return await this.eventsService.getEventById(id);
   }

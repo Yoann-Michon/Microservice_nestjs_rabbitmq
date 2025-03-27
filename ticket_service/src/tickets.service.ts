@@ -8,9 +8,11 @@ import { ClientProxy } from '@nestjs/microservices';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
 import { Status } from './entities/status.enum';
+import { Role } from './entities/role.enum';
 
 @Injectable()
 export class TicketsService {
+  
   constructor(
     @InjectRepository(Ticket) private ticketRepository: Repository<Ticket>,
     @InjectRepository(Payment) private paymentRepository: Repository<Payment>,
@@ -19,24 +21,48 @@ export class TicketsService {
 
   async createTicket(createTicketDto: CreateTicketDto) {
     const ticket = this.ticketRepository.create({
-      userId: createTicketDto.userId,
-      eventId: createTicketDto.eventId,
-      ticketNumber: uuidv4()
+      ...createTicketDto,
+      ticketNumber: uuidv4(),
+      status: Status.RESERVED,
     });
     
     return await this.ticketRepository.save(ticket);
   }
 
-  async updateTicket(updateTicketDto: UpdateTicketDto) {
+  async updateTicket(updateTicketDto: UpdateTicketDto, user: any) {
     const ticket = await this.ticketRepository.findOne({ where: { id: updateTicketDto.id } });
-    
+  
     if (!ticket) {
       throw new BadRequestException('Ticket not found');
     }
-
-
-    const updatedTicket = {...ticket, ...UpdateTicketDto}
+  
+    if (user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR) {
+      throw new BadRequestException('Access denied: Only admins and event creators can update tickets');
+    }
+  
+    const updatedTicket = { 
+      ...ticket, 
+      ...updateTicketDto, 
+      status: updateTicketDto.status as Status 
+    };
     return await this.ticketRepository.save(updatedTicket);
+  }
+  
+  async findTicketById(ticketId: number, user?: any) {
+    const ticket = await this.ticketRepository.findOne({
+      where: { id: ticketId },
+      relations: ['payments'],
+    });
+  
+    if (!ticket) {
+      throw new Error('Ticket not found');
+    }
+  
+    if (user && user.role !== Role.ADMIN && user.role !== Role.EVENTCREATOR && ticket.userId !== user.id) {
+      throw new Error('Access denied: You can only view your own tickets');
+    }
+  
+    return ticket;
   }
 
   async processPayment(ticket: Ticket, paymentData: { amount: number; user: any; event: any }) {
@@ -60,7 +86,7 @@ export class TicketsService {
     ticket.status = Status.PAID;
     await this.ticketRepository.save(ticket);
 
-    this.notificationServiceClient.emit('createNotification', {
+    this.notificationServiceClient.send('createNotification', {
       notification: {
         to: user.email,
         subject: 'Payment Successful - Ticket Purchase Confirmation',
@@ -96,13 +122,6 @@ export class TicketsService {
     ticket.status = Status.USED;
     await this.ticketRepository.save(ticket);
     return ticket;
-  }
-
-  async findTicketById(ticketId: number) {
-    return this.ticketRepository.findOne({ 
-      where: { id: ticketId },
-      relations: ['payments'] 
-    });
   }
 
   async findUserTickets(userId: number) {

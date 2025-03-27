@@ -1,8 +1,9 @@
-import { Controller } from '@nestjs/common';
+import { Controller, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
+import { Role } from './entities/role.enum';
 
 @Controller()
 export class TicketsController {
@@ -14,47 +15,41 @@ export class TicketsController {
   }
 
   @MessagePattern('updateTicket')
-  async updateTicket(@Payload() updateTicketDto: UpdateTicketDto) {
-    return await this.ticketsService.updateTicket(updateTicketDto);
+  async updateTicket(@Payload() payload: { updateTicketDto: UpdateTicketDto, user: any }) {
+    return await this.ticketsService.updateTicket(payload.updateTicketDto, payload.user);
   }
 
   @MessagePattern('processPayment')
-  async processPayment(@Payload() payload: { 
-    ticketId: number, 
-    amount: number, 
-    user: any, 
-    event: any 
-  }) {
-    const ticket = await this.ticketsService.findTicketById(payload.ticketId);
+  async processPayment(@Payload() payload: { ticketId: number; amount: number; user: any; event: any }) {
+    const ticket = await this.ticketsService.findTicketById(payload.ticketId, payload.user);
+    if (!ticket) throw new BadRequestException('Ticket not found');
     
-    if (!ticket) {
-      throw new Error('Ticket not found');
-    }
-
-    return await this.ticketsService.processPayment(ticket, {
-      amount: payload.amount,
-      user: payload.user,
-      event: payload.event
-    });
+    return await this.ticketsService.processPayment(ticket, payload);
   }
 
   @MessagePattern('validateTicket')
-  async validateTicket(@Payload() ticketId: number) {
-    return await this.ticketsService.validateTicket(ticketId);
+  async validateTicket(@Payload() payload: { ticketId: number; user: any }) {
+    return await this.ticketsService.validateTicket(payload.ticketId);
   }
 
   @MessagePattern('findTicketById')
-  async findTicketById(@Payload() ticketId: number) {
-    return await this.ticketsService.findTicketById(ticketId);
+  async findTicketById(@Payload() payload: { id: number; user: any }) {
+    return await this.ticketsService.findTicketById(payload.id, payload.user);
   }
 
   @MessagePattern('findUserTickets')
-  async findUserTickets(@Payload() userId: number) {
-    return await this.ticketsService.findUserTickets(userId);
+  async findUserTickets(@Payload() payload: { userId: number; user: any }) {
+    if (payload.user.role !== Role.ADMIN && payload.user.id !== payload.userId) {
+      throw new ForbiddenException('Access denied: You can only retrieve your own tickets');
+    }
+    return await this.ticketsService.findUserTickets(payload.userId);
   }
 
   @MessagePattern('findEventTickets')
-  async findEventTickets(@Payload() eventId: number) {
-    return await this.ticketsService.findEventTickets(eventId);
+  async findEventTickets(@Payload() payload: { eventId: number; user: any }) {
+    if (payload.user.role !== Role.ADMIN && payload.user.role !== Role.EVENTCREATOR) {
+      throw new ForbiddenException('Access denied: Only admins and event creators can view event tickets');
+    }
+    return await this.ticketsService.findEventTickets(payload.eventId);
   }
 }

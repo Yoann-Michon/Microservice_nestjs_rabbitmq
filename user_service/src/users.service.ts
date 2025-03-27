@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { Role } from './entities/role.enum';
+import { log } from 'console';
 
 @Injectable()
 export class UsersService {
@@ -76,12 +77,16 @@ export class UsersService {
   async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     try {
       const user = await this.findOneById(id);
-      
       if (!user) {
         throw new NotFoundException('User not found');
       }
-
-      const updatedUser = { ...user, ...updateUserDto, role: updateUserDto.role as Role };
+      const updatedUser = { 
+        ...user, 
+        ...updateUserDto, 
+        role: updateUserDto.role as Role ?? user.role 
+      };
+      console.log(updatedUser)
+      log(updatedUser)
       
       return await this.usersRepository.save(updatedUser);
     } catch (error) {

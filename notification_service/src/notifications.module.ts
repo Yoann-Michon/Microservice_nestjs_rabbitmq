@@ -4,6 +4,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { NotificationsController } from './notifications.controller';
 import { Notification } from './entities/notification.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [ConfigModule.forRoot({ envFilePath: '.env' }),
@@ -22,6 +23,34 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: true,
       }),
     }),
+    ClientsModule.registerAsync([
+      {
+        name: 'API_GATEWAY_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_HOST') || ''],
+            queue: configService.get<string>('RABBITMQ_API_GATEWAY_QUEUE'),
+            queueOptions: { durable: true },
+          },
+        }),
+      },{
+        name: 'TICKET_SERVICE',
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: async (configService: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [configService.get<string>('RABBITMQ_HOST') || ''],
+            queue: configService.get<string>('RABBITMQ_TICKET_QUEUE'),
+            queueOptions: { durable: true },
+          },
+        }),
+      },
+      
+    ])
   ],
   controllers: [NotificationsController],
   providers: [NotificationsService],
